@@ -3,12 +3,12 @@ const konfigurasi = {
     name: 'Jan Bistro'
   },
   firebase: {
-    apiKey: "AIzaSyDs7ZVoqPULyJa7JW_9Qal7QLGPe3HbR7Y",
-    authDomain: "jan-bistro-dev.firebaseapp.com",
-    projectId: "jan-bistro-dev",
-    storageBucket: "jan-bistro-dev.appspot.com",
-    messagingSenderId: "603495421070",
-    appId: "1:603495421070:web:2e10ffeebc7cc67a57e5df"
+    apiKey: "AIzaSyD_qqvP6Kdb0OxuhiLWFiW7VVWOFL_pVjc",
+    authDomain: "jan-bistro-live.firebaseapp.com",
+    projectId: "jan-bistro-live",
+    storageBucket: "jan-bistro-live.appspot.com",
+    messagingSenderId: "403120886946",
+    appId: "1:403120886946:web:412582e83cb90c1500b3fb"
   }
 }
 
