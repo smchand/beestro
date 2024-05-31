@@ -9,7 +9,7 @@ import { useTitle } from '@vueuse/core'
 import konfigurasi from '@/config'
 
 import { onMounted, ref } from 'vue'
-import { collection, doc, getDocs, query, where, writeBatch } from 'firebase/firestore'
+import { collection, doc, getDocs, query, where, setDoc } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
 
 const isSaving = ref(false)
@@ -44,17 +44,16 @@ onMounted(async () => {
 
 const simpanData = async () => {
   isSaving.value = true
-
-  const batch = writeBatch(db)
+  
   try {
-    batch.set(doc(settingsRef, 'about::kata_sambutan'), {
-      key: 'about::kata_sambutan',
-      value: kataSambutan.value
-    })
-
-    batch.set(doc(settingsRef, 'about::jam_buka'), {
+    await setDoc(doc(db, 'settings', 'about::jam_buka'), {
       key: 'about::jam_buka',
       value: jamBuka.value
+    })
+
+    await setDoc(doc(db, 'settings', 'about::kata_sambutan'), {
+      key: 'about::jam_buka',
+      value: kataSambutan.value
     })
 
     isSaving.value = false
