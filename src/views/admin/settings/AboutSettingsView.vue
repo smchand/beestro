@@ -52,7 +52,7 @@ const simpanData = async () => {
     })
 
     await setDoc(doc(db, 'settings', 'about::kata_sambutan'), {
-      key: 'about::jam_buka',
+      key: 'about::kata_sambutan',
       value: kataSambutan.value
     })
 
