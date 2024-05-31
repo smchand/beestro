@@ -19,7 +19,7 @@ const bookedDate = ref('')
 const bookedTime = ref('')
 const paymentProof = ref('')
 
-const today = ref('')
+const tomorrow = ref('')
 const isModalOpen = ref(false)
 const isSaving = ref(false)
 const isDone = ref(false)
@@ -44,11 +44,12 @@ onMounted(async () => {
     qris.value = queryGeneral.docs[0].data().value
   }
 
-  const date = new Date()
-  const yyyy = date.getFullYear()
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  const dd = String(date.getDate()).padStart(2, '0')
-  today.value = `${yyyy}-${mm}-${dd}`
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  console.log(`${yyyy}-${mm}-${dd}`);
 })
 
 const simpanData = async () => {
@@ -243,7 +244,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
                   type="date"
                   name="date"
                   id="date"
-                  :min="today"
+                  :min="tomorrow"
                   v-model="bookedDate"
                   class="bg-transparent border-[3px] border-[#DBAD39] outline-none rounded-[3px] w-full px-2 py-1 font-sans [color-scheme:dark]"
                 />
