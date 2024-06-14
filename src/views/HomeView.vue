@@ -262,7 +262,7 @@ useTitle(`${konfigurasi.app.name}`) //title page
 
             <div class="h-[340px]" v-if="bottomImage">
               <img
-                :src="bottomImage[0] ? bottomImage[0].image : ''"
+                :src="bottomImage[1] ? bottomImage[1].image : ''"
                 alt="Image 2"
                 class="object-cover h-full w-full object-center"
               />

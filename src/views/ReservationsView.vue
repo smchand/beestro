@@ -1,154 +1,180 @@
 <script setup>
 // import logo dan konfigurasi website
-import Logo from '@/components/icons/Logo.vue'
-import konfigurasi from '@/config.js'
+import Logo from "@/components/icons/Logo.vue";
+import konfigurasi from "@/config.js";
 
-import base64 from '@/helpers/base64.js'
-import { onMounted, ref } from 'vue'
-import { useTitle } from '@vueuse/core'
-import { useFirestore } from 'vuefire'
-import { collection, doc, getDocs, query, setDoc, Timestamp, where } from 'firebase/firestore'
+import base64 from "@/helpers/base64.js";
+import { onMounted, ref } from "vue";
+import { useTitle } from "@vueuse/core";
+import { useFirestore } from "vuefire";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 
-const qris = ref('')
+const qris = ref("");
 
-const name = ref('')
-const email = ref('')
-const numberOfPeople = ref('')
-const phoneNumber = ref('')
-const bookedDate = ref('')
-const bookedTime = ref('')
-const paymentProof = ref('')
+const name = ref("");
+const email = ref("");
+const numberOfPeople = ref("");
+const phoneNumber = ref("");
+const bookedDate = ref("");
+const bookedTime = ref("10:00");
+const paymentProof = ref("");
 
-const tomorrow = ref('')
-const isModalOpen = ref(false)
-const isSaving = ref(false)
-const isDone = ref(false)
+const tomorrow = ref("");
+const isModalOpen = ref(false);
+const isSaving = ref(false);
+const isDone = ref(false);
 
 const errors = ref({
-  name: '',
-  email: '',
-  numberOfPeople: '',
-  phoneNumber: '',
-  bookedDate: '',
-  bookedTime: ''
-})
+  name: "",
+  email: "",
+  numberOfPeople: "",
+  phoneNumber: "",
+  bookedDate: "",
+  bookedTime: "",
+});
 
-const db = useFirestore()
+const db = useFirestore();
 
 onMounted(async () => {
   const queryGeneral = await getDocs(
-    query(collection(db, 'settings'), where('key', '==', 'general::metadatas'))
-  )
+    query(collection(db, "settings"), where("key", "==", "general::metadatas"))
+  );
 
   if (!queryGeneral.empty) {
-    qris.value = queryGeneral.docs[0].data().value
+    qris.value = queryGeneral.docs[0].data().value;
   }
 
   const date = new Date();
   date.setDate(date.getDate() + 1);
   const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
   tomorrow.value = `${yyyy}-${mm}-${dd}`;
-})
+});
 
 const simpanData = async () => {
-  isSaving.value = true
+  isSaving.value = true;
 
   errors.value = {
-    name: '',
-    email: '',
-    numberOfPeople: '',
-    phoneNumber: '',
-    bookedDate: '',
-    bookedTime: ''
-  }
+    name: "",
+    email: "",
+    numberOfPeople: "",
+    phoneNumber: "",
+    bookedDate: "",
+    bookedTime: "",
+  };
 
-  if (!name.value) errors.value.name = 'Name cannot empty'
-  if (!email.value) errors.value.email = 'Email cannot empty'
-  if (!numberOfPeople.value) errors.value.numberOfPeople = 'Number Of People cannot empty'
-  if (!phoneNumber.value) errors.value.phoneNumber = 'Phone Number cannot empty'
+  if (!name.value) errors.value.name = "Name cannot empty";
+  if (!email.value) errors.value.email = "Email cannot empty";
+  if (!numberOfPeople.value)
+    errors.value.numberOfPeople = "Number Of People cannot empty";
+  if (!phoneNumber.value)
+    errors.value.phoneNumber = "Phone Number cannot empty";
   if (phoneNumber.value.length < 10)
-    errors.value.phoneNumber = 'Phone Number must have minimal 10 digits'
+    errors.value.phoneNumber = "Phone Number must have minimal 10 digits";
 
   if (phoneNumber.value) {
     if (phoneNumber.value.length < 10)
-      errors.value.phoneNumber = 'Phone Number must have at least 10 digits'
+      errors.value.phoneNumber = "Phone Number must have at least 10 digits";
 
-    const phoneNumberPattern = /^(628|08)/
+    const phoneNumberPattern = /^(628|08)/;
     if (!phoneNumberPattern.test(phoneNumber.value))
-      errors.value.phoneNumber = 'Phone Number must start with 628 or 08'
+      errors.value.phoneNumber = "Phone Number must start with 628 or 08";
   }
 
-  if (!bookedDate.value) errors.value.bookedDate = 'Booking Date cannot empty'
-  if (!bookedTime.value) errors.value.bookedTime = 'Booking Time cannot empty'
+  if (!bookedDate.value) errors.value.bookedDate = "Booking Date cannot empty";
+  if (!bookedTime.value) errors.value.bookedTime = "Booking Time cannot empty";
 
   if (
-    errors.value.name == '' &&
-    errors.value.email == '' &&
-    errors.value.numberOfPeople == '' &&
-    errors.value.phoneNumber == '' &&
-    errors.value.bookedDate == '' &&
-    errors.value.bookedTime == ''
+    errors.value.name == "" &&
+    errors.value.email == "" &&
+    errors.value.numberOfPeople == "" &&
+    errors.value.phoneNumber == "" &&
+    errors.value.bookedDate == "" &&
+    errors.value.bookedTime == ""
   ) {
-    isModalOpen.value = true
-    isSaving.value = false
-  }
-}
-
-const uploadFile = async (event) => {
-  const file = event.target.files[0]
-  if (file.size > 1024 * 1024) {
-    event.target.value = ''
-    alert('Max. file size is 1 MB')
-    return
-  }
-
-  const base64image = await base64(file)
-  paymentProof.value = base64image
-}
-
-const submitFinal = async () => {
-  isSaving.value = true
-
-  const bookingDate = new Date(bookedDate.value)
-  const [hours, minutes] = bookedTime.value.split(':')
-
-  bookingDate.setHours(hours)
-  bookingDate.setMinutes(minutes)
-
-  const bookingTimestamp = Timestamp.fromDate(bookingDate)
-
-  if (!paymentProof.value) {
-    isSaving.value = false
-    return alert('Please upload screenshot of your payment proof')
-  } else {
-    try {
-      await setDoc(doc(db, 'reservations', `BOOKING-${bookedDate.value}-${name.value}`), {
-        name: name.value,
-        email: email.value,
-        numberOfPeople: numberOfPeople.value,
-        phoneNumber: phoneNumber.value,
-        bookedDate: bookingTimestamp,
-        bookedTime: bookedTime.value,
-        paymentProof: paymentProof.value,
-        status: 'Unpaid'
-      })
-
-      isDone.value = true
-      isSaving.value = false
-    } catch (err) {
-      isSaving.value = false
-      alert('Error, please refresh this page')
+    if (confirm(`Make sure the data you entered is correct before continuing, press 'OK' if it is correct`)) {
+      isModalOpen.value = true;
+      isSaving.value = false;
     }
   }
-}
+};
+
+const uploadFile = async (event) => {
+  const file = event.target.files[0];
+  if (file.size > 1024 * 1024) {
+    event.target.value = "";
+    alert("Max. file size is 1 MB");
+    return;
+  }
+
+  const base64image = await base64(file);
+  paymentProof.value = base64image;
+};
+
+const submitFinal = async () => {
+  isSaving.value = true;
+
+  const bookingDate = new Date(bookedDate.value);
+  const [hours, minutes] = bookedTime.value.split(":");
+
+  bookingDate.setHours(hours);
+  bookingDate.setMinutes(minutes);
+
+  const bookingTimestamp = Timestamp.fromDate(bookingDate);
+
+  if (!paymentProof.value) {
+    isSaving.value = false;
+    return alert("Please upload screenshot of your payment proof");
+  } else {
+    try {
+      await setDoc(
+        doc(db, "reservations", `BOOKING-${bookedDate.value}-${name.value}`),
+        {
+          name: name.value,
+          email: email.value,
+          numberOfPeople: numberOfPeople.value,
+          phoneNumber: phoneNumber.value,
+          bookedDate: bookingTimestamp,
+          bookedTime: bookedTime.value,
+          paymentProof: paymentProof.value,
+          status: "Unpaid",
+        }
+      );
+
+      isDone.value = true;
+      isSaving.value = false;
+    } catch (err) {
+      isSaving.value = false;
+      alert("Error, please refresh this page");
+    }
+  }
+};
 
 const close = () => {
-  window.location.reload()
-}
+  window.location.reload();
+};
 
-useTitle(`Reservations - ${konfigurasi.app.name}`)
+const validateTime = () => {
+  const minTime = "10:00";
+  const maxTime = "22:00";
+
+  if (bookedTime.value < minTime) {
+    bookedTime.value = minTime;
+  } else if (bookedTime.value > maxTime) {
+    bookedTime.value = maxTime;
+  }
+};
+
+useTitle(`Reservations - ${konfigurasi.app.name}`);
 </script>
 
 <template>
@@ -166,11 +192,15 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
         <h1 class="font-antique font-bold text-[28px]">Book a table</h1>
 
         <p class="font-rosario text-[20px]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-          ut labore et dolore magna aliqua.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </p>
 
-        <form method="POST" class="mt-6 space-y-4" @submit.prevent="simpanData()">
+        <form
+          method="POST"
+          class="mt-6 space-y-4"
+          @submit.prevent="simpanData()"
+        >
           <div class="space-y-1">
             <label for="name" class="font-rosario text-[20px]">Name</label>
             <input
@@ -182,7 +212,10 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
               placeholder="John Doe"
             />
 
-            <small class="text-red-500 font-sans text-[15px]" v-if="errors.name">
+            <small
+              class="text-red-500 font-sans text-[15px]"
+              v-if="errors.name"
+            >
               {{ errors.name }}
             </small>
           </div>
@@ -198,13 +231,18 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
               placeholder="JohnDoe@gmail.com"
             />
 
-            <small class="text-red-500 font-sans text-[15px]" v-if="errors.email">
+            <small
+              class="text-red-500 font-sans text-[15px]"
+              v-if="errors.email"
+            >
               {{ errors.email }}
             </small>
           </div>
 
           <div class="space-y-1">
-            <label for="people" class="font-rosario text-[20px]">Number of People</label>
+            <label for="people" class="font-rosario text-[20px]"
+              >Number of People</label
+            >
             <input
               type="number"
               name="people"
@@ -214,13 +252,18 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
               placeholder="0"
             />
 
-            <small class="text-red-500 font-sans text-[15px]" v-if="errors.numberOfPeople">
+            <small
+              class="text-red-500 font-sans text-[15px]"
+              v-if="errors.numberOfPeople"
+            >
               {{ errors.numberOfPeople }}
             </small>
           </div>
 
           <div class="space-y-1">
-            <label for="phone" class="font-rosario text-[20px]">Phone Number</label>
+            <label for="phone" class="font-rosario text-[20px]"
+              >Phone Number</label
+            >
             <input
               type="tel"
               name="phone"
@@ -231,7 +274,10 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
               placeholder="08xx or 628xx"
             />
 
-            <small class="text-red-500 font-sans text-[15px]" v-if="errors.phoneNumber">
+            <small
+              class="text-red-500 font-sans text-[15px]"
+              v-if="errors.phoneNumber"
+            >
               {{ errors.phoneNumber }}
             </small>
           </div>
@@ -249,7 +295,10 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
                   class="bg-transparent border-[3px] border-[#DBAD39] outline-none rounded-[3px] w-full px-2 py-1 font-sans [color-scheme:dark]"
                 />
 
-                <small class="text-red-500 font-sans text-[15px]" v-if="errors.bookedDate">
+                <small
+                  class="text-red-500 font-sans text-[15px]"
+                  v-if="errors.bookedDate"
+                >
                   {{ errors.bookedDate }}
                 </small>
               </div>
@@ -258,16 +307,27 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
             <div class="w-full">
               <div class="w-full">
                 <div class="space-y-1">
-                  <label for="time" class="font-rosario text-[20px]">Time</label>
+                  <label
+                    for="time"
+                    class="font-rosario text-[20px] flex justify-between items-start"
+                  >
+                    Time
+                    <span class="text-[16px] font-normal">(10:00 - 22:00)</span>
+                  </label>
+
                   <input
                     type="time"
                     name="time"
                     id="time"
                     v-model="bookedTime"
+                    @input="validateTime"
                     class="bg-transparent border-[3px] border-[#DBAD39] outline-none rounded-[3px] w-full px-2 py-1 font-sans [color-scheme:dark]"
                   />
 
-                  <small class="text-red-500 font-sans text-[15px]" v-if="errors.bookedTime">
+                  <small
+                    class="text-red-500 font-sans text-[15px]"
+                    v-if="errors.bookedTime"
+                  >
                     {{ errors.bookedTime }}
                   </small>
                 </div>
@@ -303,14 +363,21 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
           class="bg-black/80 w-full max-w-4xl mx-auto z-50 relative p-4 rounded-lg text-white grid grid-cols-1 md:grid-cols-2"
         >
           <div v-if="!isDone" class="mb-4">
-            <img :src="qris[4].qris" v-if="qris[4].qris" alt="QRIS" class="w-full md:w-fit" />
+            <img
+              :src="qris[4].qris"
+              v-if="qris[4].qris"
+              alt="QRIS"
+              class="w-full md:w-fit"
+            />
           </div>
 
           <div class="flex items-center justify-center">
             <div v-if="!isDone">
               <div class="text-center">
                 <h1 class="font-bold text-2xl">Scan QR Code to pay</h1>
-                <p class="mt-1 text-[16px]">Pay and upload proof of your payment</p>
+                <p class="mt-1 text-[16px]">
+                  Pay and upload proof of your payment
+                </p>
 
                 <div class="mt-6">
                   <h3 class="text-[20px] font-semibold">Amount to Pay</h3>
@@ -333,7 +400,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
                     type="submit"
                     :disabled="isSaving"
                   >
-                    {{ isSaving ? 'Loading' : 'Submit' }}
+                    {{ isSaving ? "Loading" : "Submit" }}
                   </button>
                 </div>
               </div>
@@ -341,7 +408,11 @@ useTitle(`Reservations - ${konfigurasi.app.name}`)
           </div>
 
           <div v-if="isDone" class="col-span-2 px-6 py-4">
-            <button type="button" @click="close()" class="text-4xl absolute right-3 top-0">
+            <button
+              type="button"
+              @click="close()"
+              class="text-4xl absolute right-3 top-0"
+            >
               &times;
             </button>
 

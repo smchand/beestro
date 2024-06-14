@@ -9,7 +9,6 @@ import { useFirestore } from 'vuefire'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 
 const kataSambutan = ref('')
-const jamBuka = ref({})
 const general = ref([
   { instagram: '' },
   { tiktok: '' },
@@ -22,18 +21,12 @@ const db = useFirestore()
 const settingsRef = collection(db, 'settings')
 
 const queryKataSambutan = query(settingsRef, where('key', '==', 'about::kata_sambutan'))
-const queryJamBuka = query(settingsRef, where('key', '==', 'about::jam_buka'))
 const queryGeneral = query(collection(db, 'settings'), where('key', '==', 'general::metadatas'))
 
 onMounted(async () => {
   const queryKataSambutanSnapshot = await getDocs(queryKataSambutan)
   if (!queryKataSambutanSnapshot.empty) {
     kataSambutan.value = queryKataSambutanSnapshot.docs[0].data().value
-  }
-
-  const queryJamBukaSnapshot = await getDocs(queryJamBuka)
-  if (!queryJamBukaSnapshot.empty) {
-    jamBuka.value = queryJamBukaSnapshot.docs[0].data().value
   }
 
   const queryGeneralSnapshot = await getDocs(queryGeneral)
@@ -235,37 +228,37 @@ useTitle(`About Us - ${konfigurasi.app.name}`)
               <table class="text-white mt-5 mx-auto md:mx-0">
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Monday</th>
-                  <td>{{ jamBuka.senin }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Tuesday</th>
-                  <td>{{ jamBuka.selasa }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Wednesday</th>
-                  <td>{{ jamBuka.rabu }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Thursday</th>
-                  <td>{{ jamBuka.kamis }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Friday</th>
-                  <td>{{ jamBuka.jumat }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Saturday</th>
-                  <td>{{ jamBuka.sabtu }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
 
                 <tr class="font-rosario text-[20px]">
                   <th class="w-32 text-left">Sunday</th>
-                  <td>{{ jamBuka.minggu }}</td>
+                  <td>10am - 10pm</td>
                 </tr>
               </table>
             </div>
@@ -279,7 +272,7 @@ useTitle(`About Us - ${konfigurasi.app.name}`)
 
               <div class="mt-8">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d394.6646645267126!2d106.7409422829134!3d-6.110946290541382!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6a1d9badbe95ed%3A0x6216a0c2f73e735e!2sJAN%20Bistro!5e0!3m2!1sid!2sid!4v1711353043586!5m2!1sid!2sid"
+                  src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15865.227621448268!2d106.6490348!3d-6.2232028!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69fb20a9906e13%3A0xf75c5296d0a385e4!2sUniversitas%20Bina%20Nusantara%20(BINUS)%20Alam%20Sutera!5e0!3m2!1sid!2sid!4v1718375153686!5m2!1sid!2sid"
                   width="100%"
                   height="200"
                   style="border: 0"

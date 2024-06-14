@@ -1,13 +1,7 @@
-<script>
-export default {
-  name: 'Menu Settings'
-}
-</script>
-
 <script setup>
-import { useTitle } from '@vueuse/core'
-import konfigurasi from '@/config'
-import { computed, onMounted, ref } from 'vue'
+import { useTitle } from "@vueuse/core";
+import konfigurasi from "@/config";
+import { computed, onMounted, ref } from "vue";
 import {
   addDoc,
   collection,
@@ -16,131 +10,165 @@ import {
   getDocs,
   orderBy,
   query,
-  where
-} from 'firebase/firestore'
-import { useFirestore } from 'vuefire'
-import rupiah from '@/helpers/rupiah'
+  where,
+  updateDoc,
+} from "firebase/firestore";
+import { useFirestore } from "vuefire";
+import rupiah from "@/helpers/rupiah";
 
-const db = useFirestore()
+const db = useFirestore();
 const category = {
-  starter: 'Starter',
-  brunch: 'Brunch',
-  western: 'Western',
-  asian: 'Asian',
-  pizza_pasta: 'Pizza & Pasta',
-  beverages: 'Beverages'
-}
-const tab = ref({ slug: 'starter', title: 'Starter' })
-const list = ref([])
+  starter: "Starter",
+  brunch: "Brunch",
+  western: "Western",
+  asian: "Asian",
+  pizza_pasta: "Pizza & Pasta",
+  beverages: "Beverages",
+};
+const tab = ref({ slug: "starter", title: "Starter" });
+const list = ref([]);
 
-const isModalOpen = ref(false)
-const isSaving = ref(false)
-const isLoading = ref(false)
+const isModalOpen = ref(false);
+const isSaving = ref(false);
+const isLoading = ref(false);
 
-const inputData = ref({ title: '', image: '', description: '', price: '', slug: tab.value.slug })
-const errors = ref({ title: '', image: '', description: '', price: '' })
+const inputData = ref({
+  title: "",
+  image: "",
+  description: "",
+  price: "",
+  slug: tab.value.slug,
+});
+const errors = ref({ title: "", image: "", description: "", price: "" });
+const editData = ref(null);
 
 const fetchData = async () => {
-  isLoading.value = true
-  currentPage.value = 1
+  isLoading.value = true;
+  currentPage.value = 1;
 
-  list.value = []
+  list.value = [];
 
   const queryAll = await getDocs(
-    query(collection(db, 'menus'), where('slug', '==', tab.value.slug), orderBy('slug', 'desc'))
-  )
+    query(
+      collection(db, "menus"),
+      where("slug", "==", tab.value.slug),
+      orderBy("slug", "desc")
+    )
+  );
   queryAll.forEach((doc) => {
-    list.value.push(doc.data())
-  })
+    list.value.push({ ...doc.data(), id: doc.id });
+  });
 
-  isLoading.value = false
-}
+  isLoading.value = false;
+};
 
 onMounted(async () => {
-  await fetchData()
-})
+  await fetchData();
+});
 
-const itemsPerPage = 8
-const currentPage = ref(1)
-const totalPages = computed(() => Math.ceil(list.value.length / itemsPerPage))
+const itemsPerPage = 8;
+const currentPage = ref(1);
+const totalPages = computed(() => Math.ceil(list.value.length / itemsPerPage));
 
 const paginatedItems = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  return list.value.slice(startIndex, endIndex)
-})
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return list.value.slice(startIndex, endIndex);
+});
 
 const goToPage = (page) => {
-  currentPage.value = page
-}
+  currentPage.value = page;
+};
 
 const switchTab = async (changeTo) => {
-  tab.value = changeTo
+  tab.value = changeTo;
 
-  await fetchData()
-}
+  await fetchData();
+};
 
 const openModal = () => {
-  errors.value = { title: '', image: '', description: '', price: '' }
-  inputData.value = { title: '', image: '', description: '', price: '', slug: tab.value.slug }
+  errors.value = { title: "", image: "", description: "", price: "" };
+  inputData.value = {
+    title: "",
+    image: "",
+    description: "",
+    price: "",
+    slug: tab.value.slug,
+  };
 
-  isModalOpen.value = true
-}
+  isModalOpen.value = true;
+};
 
 const closeModal = () => {
-  isModalOpen.value = false
-}
+  isModalOpen.value = false;
+  editData.value = null;
+};
 
 const simpanData = async () => {
-  isSaving.value = true
-  errors.value = { title: '', image: '', description: '', price: '' }
+  isSaving.value = true;
+  errors.value = { title: "", image: "", description: "", price: "" };
 
-  if (!inputData.value.title) errors.value.title = 'Title tidak boleh kosong'
-  if (!inputData.value.image) errors.value.image = 'URL Gambar tidak boleh kosong'
-  if (!inputData.value.description) errors.value.description = 'Deskripsi tidak boleh kosong'
-  if (!inputData.value.price) errors.value.price = 'Harga tidak boleh kosong'
+  if (!inputData.value.title) errors.value.title = "Title tidak boleh kosong";
+  if (!inputData.value.image)
+    errors.value.image = "URL Gambar tidak boleh kosong";
+  if (!inputData.value.description)
+    errors.value.description = "Deskripsi tidak boleh kosong";
+  if (!inputData.value.price) errors.value.price = "Harga tidak boleh kosong";
 
   if (
-    errors.value.title == '' &&
-    errors.value.image == '' &&
-    errors.value.description == '' &&
-    errors.value.price == ''
+    errors.value.title == "" &&
+    errors.value.image == "" &&
+    errors.value.description == "" &&
+    errors.value.price == ""
   ) {
     try {
-      await addDoc(collection(db, 'menus'), inputData.value)
-      await fetchData()
+      if (editData.value) {
+        const docRef = doc(db, "menus", editData.value);
+        await updateDoc(docRef, inputData.value);
+      } else {
+        await addDoc(collection(db, "menus"), inputData.value);
+      }
 
-      isModalOpen.value = false
-      isSaving.value = false
+      await fetchData();
+      isModalOpen.value = false;
+      isSaving.value = false;
+      editData.value = null;
     } catch (err) {
-      alert('Terjadi kesalahan, silahkan refresh halaman ini')
-      isModalOpen.value = false
-      isSaving.value = false
+      alert("Terjadi kesalahan, silahkan refresh halaman ini");
+      isModalOpen.value = false;
+      isSaving.value = false;
     }
   } else {
-    isSaving.value = false
+    isSaving.value = false;
   }
-}
+};
 
 const hapus = async (item) => {
   if (confirm(`Apakah anda yakin?`)) {
     try {
-      const querySnapshot = await getDocs(collection(db, 'menus'))
+      const querySnapshot = await getDocs(collection(db, "menus"));
 
       querySnapshot.forEach((doc) => {
         if (doc.data().title === item.title) {
-          deleteDoc(doc.ref)
+          deleteDoc(doc.ref);
         }
-      })
+      });
 
-      await fetchData()
+      await fetchData();
     } catch (error) {
-      alert(`Gagal menghapus data: ${error}`)
+      alert(`Gagal menghapus data: ${error}`);
     }
   }
-}
+};
 
-useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
+const edit = (data, id) => {
+  errors.value = { title: "", image: "", description: "", price: "" };
+  inputData.value = { ...data, slug: tab.value.slug };
+  editData.value = id;
+  isModalOpen.value = true;
+};
+
+useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`);
 </script>
 
 <template>
@@ -164,7 +192,9 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
 
     <div>
       <div class="bg-white/60 px-4 py-2 rounded-tl-lg rounded-tr-lg">
-        <h1 class="font-bold uppercase font-sans">Pengaturan {{ tab.title }}</h1>
+        <h1 class="font-bold uppercase font-sans">
+          Pengaturan {{ tab.title }}
+        </h1>
       </div>
 
       <div class="bg-white px-4 py-4">
@@ -184,19 +214,33 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
               <img :src="data.image" :alt="data.title" />
 
               <div class="mt-2">
-                <span class="font-sans text-[14px]">{{ rupiah(data.price) }}</span>
+                <span class="font-sans text-[14px]">{{
+                  rupiah(data.price)
+                }}</span>
 
                 <h1 class="font-sans font-bold">{{ data.title }}</h1>
-                <p class="font-sans font-medium text-[16px]">{{ data.description }}</p>
+                <p class="font-sans font-medium text-[16px]">
+                  {{ data.description }}
+                </p>
                 <p class="font-sans font-medium text-[12px]">{{ data.date }}</p>
 
-                <button
-                  @click="hapus(data)"
-                  type="button"
-                  class="underline text-blue-600 text-[12px] font-sans"
-                >
-                  Hapus
-                </button>
+                <div class="flex items-center space-x-1">
+                  <button
+                    @click="hapus(data)"
+                    type="button"
+                    class="underline text-blue-600 text-[12px] font-sans"
+                  >
+                    Hapus
+                  </button>
+
+                  <button
+                    @click="edit(data, data.id)"
+                    type="button"
+                    class="underline text-blue-600 text-[12px] font-sans"
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -208,7 +252,9 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
           {{ list.length }}
         </div>
 
-        <div class="font-sans" v-else-if="!isLoading && list.length == 0">Tidak ada data</div>
+        <div class="font-sans" v-else-if="!isLoading && list.length == 0">
+          Tidak ada data
+        </div>
 
         <div class="mt-4 flex justify-start font-sans" v-if="!isLoading">
           <button
@@ -232,21 +278,32 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
 
     <div
       v-if="isModalOpen"
-      class="backdrop-blur-sm fixed top-0 bottom-0 right-0 left-0 bg-black/50"
+      class="backdrop-blur-sm fixed top-0 bottom-0 right-0 left-0 bg-black/50 z-50"
     >
       <div class="flex items-center justify-center h-full">
-        <form @submit.prevent="simpanData" class="mx-4 lg:mx-0 w-[450px] max-w-[450px]">
-          <div class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b">
+        <form
+          @submit.prevent="simpanData"
+          class="mx-4 lg:mx-0 w-[450px] max-w-[450px]"
+        >
+          <div
+            class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b"
+          >
             <h1 class="font-bold font-sans text-[16px]">
               Tambah Menu <span class="capitalize">{{ tab.title }}</span>
             </h1>
 
-            <button type="button" class="font-sans text-gray-800 font-bold" @click="closeModal">
+            <button
+              type="button"
+              class="font-sans text-gray-800 font-bold"
+              @click="closeModal"
+            >
               X
             </button>
           </div>
 
-          <div class="p-4 bg-white min-h-fit max-h-[75vh] overflow-y-auto space-y-4">
+          <div
+            class="p-4 bg-white min-h-fit max-h-[75vh] overflow-y-auto space-y-4"
+          >
             <div class="font-sans">
               <label for="event">Title</label>
               <input
@@ -256,7 +313,10 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
                 v-model="inputData.title"
               />
 
-              <small class="text-red-500 font-sans text-[15px]" v-if="errors.title">
+              <small
+                class="text-red-500 font-sans text-[15px]"
+                v-if="errors.title"
+              >
                 {{ errors.title }}
               </small>
             </div>
@@ -270,7 +330,10 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
                 v-model="inputData.image"
               />
 
-              <small class="text-red-500 font-sans text-[15px]" v-if="errors.image">
+              <small
+                class="text-red-500 font-sans text-[15px]"
+                v-if="errors.image"
+              >
                 {{ errors.image }}
               </small>
             </div>
@@ -284,7 +347,10 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
                 v-model="inputData.description"
               />
 
-              <small class="text-red-500 font-sans text-[15px]" v-if="errors.description">
+              <small
+                class="text-red-500 font-sans text-[15px]"
+                v-if="errors.description"
+              >
                 {{ errors.description }}
               </small>
             </div>
@@ -298,7 +364,10 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
                 v-model="inputData.price"
               />
 
-              <small class="text-red-500 font-sans text-[15px]" v-if="errors.price">
+              <small
+                class="text-red-500 font-sans text-[15px]"
+                v-if="errors.price"
+              >
                 {{ errors.price }}
               </small>
             </div>
@@ -310,7 +379,7 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`)
               class="bg-green-500 rounded text-white px-2 py-1 font-sans mr-2 text-[15px] disabled:bg-green-400"
               :disabled="isSaving"
             >
-              {{ isSaving ? 'Loading' : 'Simpan' }}
+              {{ isSaving ? "Loading" : "Simpan" }}
             </button>
 
             <button

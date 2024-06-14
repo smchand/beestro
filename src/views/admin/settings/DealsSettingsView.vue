@@ -16,6 +16,7 @@ import {
   getDocs,
   orderBy,
   query,
+  updateDoc,
   where
 } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
@@ -28,6 +29,8 @@ const db = useFirestore()
 const isModalOpen = ref(false)
 const isSaving = ref(false)
 const isLoading = ref(false)
+const isEdit = ref(false)
+const editId = ref(null)
 
 const inputData = ref({ title: '', image: '', description: '', date: '', slug: tab.value.slug })
 const errors = ref({ title: '', image: '', description: '', date: '' })
@@ -45,7 +48,7 @@ const fetchData = async () => {
     )
   )
   queryAll.forEach((doc) => {
-    list.value.push(doc.data())
+    list.value.push({ id: doc.id, ...doc.data() })
   })
 
   isLoading.value = false
@@ -79,10 +82,20 @@ const openModal = () => {
   errors.value = { title: '', image: '', description: '', date: '' }
   inputData.value = { title: '', image: '', description: '', date: '', slug: tab.value.slug }
   isModalOpen.value = true
+  isEdit.value = false
+  editId.value = null
 }
 
 const closeModal = () => {
   isModalOpen.value = false
+}
+
+const editData = (item) => {
+  errors.value = { title: '', image: '', description: '', date: '' }
+  inputData.value = { ...item }
+  isModalOpen.value = true
+  isEdit.value = true
+  editId.value = item.id
 }
 
 const simpanData = async () => {
@@ -101,7 +114,12 @@ const simpanData = async () => {
     errors.value.date == ''
   ) {
     try {
-      await addDoc(collection(db, 'deals_events'), inputData.value)
+      if (isEdit.value) {
+        const docRef = doc(db, 'deals_events', editId.value)
+        await updateDoc(docRef, inputData.value)
+      } else {
+        await addDoc(collection(db, 'deals_events'), inputData.value)
+      }
       await fetchData()
 
       isModalOpen.value = false
@@ -119,14 +137,8 @@ const simpanData = async () => {
 const hapus = async (item) => {
   if (confirm(`Apakah anda yakin?`)) {
     try {
-      const querySnapshot = await getDocs(collection(db, `deals_events`))
-
-      querySnapshot.forEach((doc) => {
-        if (doc.data().title === item.title) {
-          deleteDoc(doc.ref)
-        }
-      })
-
+      const docRef = doc(db, 'deals_events', item.id)
+      await deleteDoc(docRef)
       await fetchData()
     } catch (error) {
       alert(`Gagal menghapus data: ${error}`)
@@ -191,9 +203,16 @@ useTitle(`Pengaturan Deals & Events - ${konfigurasi.app.name}`)
                 <button
                   @click="hapus(data)"
                   type="button"
-                  class="underline text-blue-600 text-[13px] font-sans"
+                  class="underline text-blue-600 text-[13px] font-sans mr-2"
                 >
                   Hapus
+                </button>
+                <button
+                  @click="editData(data)"
+                  type="button"
+                  class="underline text-blue-600 text-[13px] font-sans"
+                >
+                  Edit
                 </button>
               </div>
             </div>
@@ -233,7 +252,9 @@ useTitle(`Pengaturan Deals & Events - ${konfigurasi.app.name}`)
       <div class="flex items-center justify-center h-full">
         <form @submit.prevent="simpanData" class="mx-4 lg:mx-0 w-[450px] max-w-[450px]">
           <div class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b">
-            <h1 class="font-bold font-sans text-[16px]">Tambah {{ tab.title }}</h1>
+            <h1 class="font-bold font-sans text-[16px]">
+              {{ isEdit ? 'Edit' : 'Tambah' }} {{ tab.title }}
+            </h1>
 
             <button type="button" class="font-sans text-gray-800 font-bold" @click="closeModal">
               X
