@@ -289,7 +289,9 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`);
             class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b"
           >
             <h1 class="font-bold font-sans text-[16px]">
-              Tambah Menu <span class="capitalize">{{ tab.title }}</span>
+              <span v-if="editData">Edit Menu</span>
+              <span v-else>Tambah Menu</span>
+              <span class="capitalize">&nbsp;{{ tab.title }}</span>
             </h1>
 
             <button

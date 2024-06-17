@@ -1,102 +1,143 @@
 <script setup>
-import konfigurasi from '@/config'
-import { useTitle } from '@vueuse/core'
-import { useFirestore } from 'vuefire'
-import { collection, doc, getDocs, orderBy, updateDoc, where } from 'firebase/firestore'
-import { computed, onMounted, ref } from 'vue'
-import { query } from 'firebase/database'
+import konfigurasi from "@/config";
+import { useTitle } from "@vueuse/core";
+import { useFirestore } from "vuefire";
+import {
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { computed, onMounted, ref } from "vue";
+import { query } from "firebase/database";
 
-const db = useFirestore()
+const db = useFirestore();
 
-const reservations = ref([])
-const modalData = ref([])
-const filter = ref('all')
+const reservations = ref([]);
+const modalData = ref([]);
+const filter = ref("all");
 
-const isLoading = ref(false)
-const isModalOpen = ref(false)
-const isAccepting = ref(false)
+const isLoading = ref(false);
+const isModalOpen = ref(false);
+const isAction = ref(false);
 
 const fetchData = async () => {
-  isLoading.value = true
-  reservations.value = []
+  isLoading.value = true;
+  reservations.value = [];
 
   let queryReservations = await getDocs(
-    query(collection(db, 'reservations'), orderBy('status', 'desc'))
-  )
+    query(collection(db, "reservations"), orderBy("status", "desc"))
+  );
 
-  if (filter.value != 'all') {
+  if (filter.value != "all") {
     queryReservations = await getDocs(
       query(
-        collection(db, 'reservations'),
-        where('status', '==', filter.value),
-        orderBy('bookedDate', 'desc')
+        collection(db, "reservations"),
+        where("status", "==", filter.value),
+        orderBy("bookedDate", "desc")
       )
-    )
+    );
   }
 
   queryReservations.forEach((doc) => {
-    reservations.value.push({ ...doc.data(), doc })
-  })
+    reservations.value.push({ ...doc.data(), doc });
+  });
 
-  isLoading.value = false
-}
+  isLoading.value = false;
+};
 
 onMounted(async () => {
-  await fetchData()
-})
+  await fetchData();
+});
 
-const itemsPerPage = 10
-const totalPages = computed(() => Math.ceil(reservations.value.length / itemsPerPage))
-const currentPage = ref(1)
+const itemsPerPage = 10;
+const totalPages = computed(() =>
+  Math.ceil(reservations.value.length / itemsPerPage)
+);
+const currentPage = ref(1);
 
 const paginatedReservations = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  return reservations.value.slice(startIndex, endIndex)
-})
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return reservations.value.slice(startIndex, endIndex);
+});
 
 const goToPage = (page) => {
-  currentPage.value = page
-}
+  currentPage.value = page;
+};
 
 const formatDate = (timestamp) => {
-  const date = new Date(timestamp.seconds * 1000)
-  return date.toLocaleDateString('id-ID')
-}
+  const date = new Date(timestamp.seconds * 1000);
+  return date.toLocaleDateString("id-ID");
+};
 
 const openModal = (item) => {
-  isModalOpen.value = true
-  modalData.value = item
-}
+  isModalOpen.value = true;
+  modalData.value = item;
+};
 
 const closeModal = () => {
-  isModalOpen.value = false
-  modalData.value = ''
-}
+  isModalOpen.value = false;
+  modalData.value = "";
+};
 
 const chooseFilter = async (val) => {
-  filter.value = val
+  filter.value = val;
 
-  await fetchData()
-}
+  await fetchData();
+};
 
 const acceptPayment = async (item) => {
-  isAccepting.value = true
+  isAction.value = true;
 
-  const reservationRef = doc(db, 'reservations', item.doc.id)
+  const reservationRef = doc(db, "reservations", item.doc.id);
   await updateDoc(reservationRef, {
-    status: 'Paid'
-  })
+    status: "Confirmed",
+  });
 
-  isAccepting.value = false
-  closeModal()
+  isAction.value = false;
+  closeModal();
 
-  alert(`Berhasil`)
+  alert(`Berhasil`);
 
-  await fetchData()
-}
+  await fetchData();
+};
 
-useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
+const cancelPayment = async (item) => {
+  isAction.value = true;
+
+  const reservationRef = doc(db, "reservations", item.doc.id);
+  await updateDoc(reservationRef, {
+    status: "Canceled",
+  });
+
+  isAction.value = false;
+  closeModal();
+
+  alert(`Berhasil`);
+
+  await fetchData();
+};
+
+const selesaikan = async (item) => {
+  isAction.value = true;
+
+  const reservationRef = doc(db, "reservations", item.doc.id);
+  await updateDoc(reservationRef, {
+    status: "Done",
+  });
+
+  isAction.value = false;
+  closeModal();
+
+  alert(`Berhasil`);
+
+  await fetchData();
+};
+
+useTitle(`Data Reservasi  - ${konfigurasi.app.name}`);
 </script>
 
 <template>
@@ -115,22 +156,42 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
 
       <button
         :class="`bg-blue-500 text-white font-sans px-4 py-1 font-bold rounded disabled:cursor-not-allowed [&.active]:bg-blue-400 ${
-          filter == 'Unpaid' ? 'active' : ''
+          filter == 'Pending' ? 'active' : ''
         }`"
-        :disabled="filter == 'Unpaid'"
-        @click="chooseFilter('Unpaid')"
+        :disabled="filter == 'Pending'"
+        @click="chooseFilter('Pending')"
       >
-        Unpaid
+        Pending
       </button>
 
       <button
         :class="`bg-blue-500 text-white font-sans px-4 py-1 font-bold rounded disabled:cursor-not-allowed [&.active]:bg-blue-400 ${
-          filter == 'Paid' ? 'active' : ''
+          filter == 'Confirmed' ? 'active' : ''
         }`"
-        :disabled="filter == 'Paid'"
-        @click="chooseFilter('Paid')"
+        :disabled="filter == 'Confirmed'"
+        @click="chooseFilter('Confirmed')"
       >
-        Paid
+        Confirmed
+      </button>
+
+      <button
+        :class="`bg-blue-500 text-white font-sans px-4 py-1 font-bold rounded disabled:cursor-not-allowed [&.active]:bg-blue-400 ${
+          filter == 'Canceled' ? 'active' : ''
+        }`"
+        :disabled="filter == 'Canceled'"
+        @click="chooseFilter('Canceled')"
+      >
+        Canceled
+      </button>
+
+      <button
+        :class="`bg-blue-500 text-white font-sans px-4 py-1 font-bold rounded disabled:cursor-not-allowed [&.active]:bg-blue-400 ${
+          filter == 'Done' ? 'active' : ''
+        }`"
+        :disabled="filter == 'Done'"
+        @click="chooseFilter('Done')"
+      >
+        Done
       </button>
     </div>
 
@@ -149,12 +210,15 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
             <th class="border px-4 py-2">Nomor Telepon</th>
             <th class="border px-4 py-2">Waktu Dipesan</th>
             <th class="border px-4 py-2">Status</th>
-            <th class="border px-4 py-2 w-10" v-if="filter != 'Paid'">Lihat Bukti Transfer</th>
+            <th class="border px-4 py-2 w-10">Bukti Transfer</th>
           </tr>
         </thead>
 
         <tbody v-if="paginatedReservations.length > 0">
-          <tr v-for="(reservation, index) in paginatedReservations" :key="reservation.id">
+          <tr
+            v-for="(reservation, index) in paginatedReservations"
+            :key="reservation.id"
+          >
             <td class="border px-4 py-2">
               {{ (currentPage - 1) * itemsPerPage + index + 1 }}
             </td>
@@ -163,16 +227,27 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
             <td class="border px-4 py-2">{{ reservation.numberOfPeople }}</td>
             <td class="border px-4 py-2">{{ reservation.phoneNumber }}</td>
             <td class="border px-4 py-2">
-              {{ formatDate(reservation.bookedDate) }} - {{ reservation.bookedTime }}
+              {{ formatDate(reservation.bookedDate) }} -
+              {{ reservation.bookedTime }}
             </td>
             <td class="border px-4 py-2">{{ reservation.status }}</td>
-            <td class="border px-4 py-2 text-center" v-if="filter != 'Paid'">
+            <td class="border px-4 py-2 text-center">
               <button
                 class="bg-blue-400 px-2 py-1 rounded text-white font-semibold text-[15px]"
                 type="button"
+                v-if="reservation.status == 'Pending'"
                 @click="openModal(reservation)"
               >
                 Lihat
+              </button>
+
+              <button
+                class="bg-green-400 px-2 py-1 rounded text-white font-semibold text-[15px]"
+                type="button"
+                v-else-if="reservation.status == 'Confirmed'"
+                @click="selesaikan(reservation)"
+              >
+                Selesaikan
               </button>
             </td>
           </tr>
@@ -186,14 +261,17 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
 
         <tbody v-if="isLoading">
           <tr>
-            <td colspan="8" class="border px-4 py-2 text-center">Loading Data..</td>
+            <td colspan="8" class="border px-4 py-2 text-center">
+              Loading Data..
+            </td>
           </tr>
         </tbody>
       </table>
 
       <div class="font-sans mt-4" v-if="reservations.length > 0">
         Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} -
-        {{ Math.min(currentPage * itemsPerPage, reservations.length) }} data dari
+        {{ Math.min(currentPage * itemsPerPage, reservations.length) }} data
+        dari
         {{ reservations.length }}
       </div>
 
@@ -222,33 +300,49 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`)
     >
       <div class="flex items-center justify-center h-full">
         <div class="mx-4 lg:mx-0">
-          <div class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b">
-            <h1 class="font-bold font-sans text-[16px]">Bukti Pembayaran {{ modalData.name }}</h1>
+          <div
+            class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b"
+          >
+            <h1 class="font-bold font-sans text-[16px]">
+              Bukti Pembayaran {{ modalData.name }}
+            </h1>
 
-            <button type="button" class="font-sans text-gray-800 font-bold" @click="closeModal">
+            <button
+              type="button"
+              class="font-sans text-gray-800 font-bold"
+              @click="closeModal"
+            >
               X
             </button>
           </div>
 
-          <div class="p-2 bg-white w-full min-h-fit max-h-[75vh] overflow-y-auto max-w-full">
-            <img :src="modalData.paymentProof" alt="" class="object-cover w-full" />
+          <div
+            class="p-2 bg-white w-full min-h-fit max-h-[75vh] overflow-y-auto max-w-full"
+          >
+            <img
+              :src="modalData.paymentProof"
+              alt=""
+              class="object-cover w-full"
+            />
           </div>
 
           <div class="bg-white rounded-bl rounded-br border-t px-4 py-2">
             <button
               class="bg-green-500 rounded text-white px-2 py-1 font-sans mr-2 text-[15px] disabled:bg-green-300"
               @click="acceptPayment(modalData)"
-              v-if="modalData.status != 'Paid'"
-              :disabled="isAccepting"
+              v-if="modalData.status == 'Pending'"
+              :disabled="isAction"
             >
-              {{ isAccepting ? `Loading` : `Terima Pembayaran` }}
+              {{ isAction ? `Loading` : `Terima Pembayaran` }}
             </button>
 
             <button
-              class="bg-gray-500 rounded text-white px-2 py-1 font-sans text-[15px]"
-              @click="closeModal"
+              class="bg-red-500 rounded text-white px-2 py-1 font-sans mr-2 text-[15px] disabled:bg-red-300"
+              @click="cancelPayment(modalData)"
+              v-if="modalData.status == 'Pending'"
+              :disabled="isAction"
             >
-              Tutup
+              {{ isAction ? `Loading` : `Tolak Pembayaran` }}
             </button>
           </div>
         </div>

@@ -146,7 +146,7 @@ const submitFinal = async () => {
           bookedDate: bookingTimestamp,
           bookedTime: bookedTime.value,
           paymentProof: paymentProof.value,
-          status: "Unpaid",
+          status: "Pending",
         }
       );
 
