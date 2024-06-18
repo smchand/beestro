@@ -8,7 +8,7 @@ const konfigurasi = {
     projectId: "jan-bistro-live",
     storageBucket: "jan-bistro-live.appspot.com",
     messagingSenderId: "403120886946",
-    appId: "1:403120886946:web:412582e83cb90c1500b3fb"
+    appId: "1:403120886946:web:8ecdbe0707a3979900b3fb",
   }
 }
 
