@@ -137,7 +137,7 @@ const submitFinal = async () => {
   } else {
     try {
       await setDoc(
-        doc(db, "reservations", `BOOKING-${bookedDate.value}-${name.value}`),
+        doc(db, "reservations", `BOOKING-${bookedDate.value}-${name.value}-${Math.floor(hours + Math.random() * 1000)}`),
         {
           name: name.value,
           email: email.value,
