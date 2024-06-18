@@ -72,7 +72,7 @@ const simpanData = async () => {
     const uniqueIdentifier = `${yyyy}-${mm}-${dd}`
 
     try {
-      await setDoc(doc(db, 'feedback', `CONTACTUS-${uniqueIdentifier}-${name.value}`), {
+      await setDoc(doc(db, 'feedback', `CONTACTUS-${uniqueIdentifier}-${name.value}-${Math.floor(dd + Math.random() * mm * 1000)}`), {
         name: name.value,
         email: email.value,
         phoneNumber: phoneNumber.value,
