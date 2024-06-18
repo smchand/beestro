@@ -63,6 +63,10 @@ const closeModal = () => {
   modalData.value = ''
 }
 
+const potong = (message) => {
+  return message.length > 25 ? message.substr(0, 25) + '...' : message;
+};
+
 useTitle(`Data Feedback  - ${konfigurasi.app.name}`)
 </script>
 
@@ -95,8 +99,8 @@ useTitle(`Data Feedback  - ${konfigurasi.app.name}`)
             <td class="border px-4 py-2">{{ feedback.email }}</td>
             <td class="border px-4 py-2">{{ feedback.phoneNumber }}</td>
             <td class="border px-4 py-2">{{ feedback.name }}</td>
-            <td class="border px-4 py-2">{{ feedback.subject }}</td>
-            <td class="border px-4 py-2">{{ feedback.message }}</td>
+            <td class="border px-4 py-2">{{ potong(feedback.subject) }}</td>
+            <td class="border px-4 py-2">{{ potong(feedback.message) }}</td>
             <td class="border px-4 py-2">{{ formatDate(feedback.created_at) }}</td>
 
             <td class="border px-4 py-2 text-center" v-if="filter != 'Paid'">
