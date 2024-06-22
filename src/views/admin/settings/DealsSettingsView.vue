@@ -203,14 +203,14 @@ useTitle(`Pengaturan Deals & Events - ${konfigurasi.app.name}`)
                 <button
                   @click="hapus(data)"
                   type="button"
-                  class="underline text-blue-600 text-[13px] font-sans mr-2"
+                  class="text-white text-[13px] font-sans px-2 py-1 bg-blue-500 rounded mr-2 mt-2"
                 >
                   Hapus
                 </button>
                 <button
                   @click="editData(data)"
                   type="button"
-                  class="underline text-blue-600 text-[13px] font-sans"
+                  class="text-white text-[13px] font-sans bg-blue-500 rounded mt-2 px-4 py-1"
                 >
                   Edit
                 </button>
