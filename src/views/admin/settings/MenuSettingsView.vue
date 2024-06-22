@@ -228,7 +228,7 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`);
                   <button
                     @click="hapus(data)"
                     type="button"
-                    class="underline text-blue-600 text-[12px] font-sans"
+                    class="text-white text-[12px] font-sans bg-blue-500 rounded mt-2 px-2 py-1"
                   >
                     Hapus
                   </button>
@@ -236,7 +236,7 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`);
                   <button
                     @click="edit(data, data.id)"
                     type="button"
-                    class="underline text-blue-600 text-[12px] font-sans"
+                    class="text-white text-[12px] font-sans bg-blue-500 rounded mt-2 px-2 py-1"
                   >
                     Edit
                   </button>
