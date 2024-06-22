@@ -148,7 +148,7 @@ useTitle(`About Us - ${konfigurasi.app.name}`)
 
           <div class="text-center mt-16">
             <router-link
-              to="/menu"
+              to="/menu?menu=beverages"
               class="bg-[#DBAD39] px-10 py-3 rounded text-white font-semibold font-rosario text-[18px] block w-fit mx-auto"
             >
               Alcoholic Beverages Menu
