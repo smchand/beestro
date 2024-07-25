@@ -27,21 +27,34 @@ onMounted(async () => {
   }
 })
 
+const errors = ref({
+  kataSambutan: ''
+});
+
 const simpanData = async () => {
   isSaving.value = true
-  
-  try {
-    await setDoc(doc(db, 'settings', 'about::kata_sambutan'), {
-      key: 'about::kata_sambutan',
-      value: kataSambutan.value
-    })
-
-    isSaving.value = false
-    alert('Data berhasil disimpan')
-  } catch (err) {
-    isSaving.value = false
-    alert('Gagal menyimpan data')
+  errors.value.kataSambutan = ""
+  if(!kataSambutan.value){
+    errors.value.kataSambutan = "Kata sambutan tidak boleh kosong";
   }
+
+  if(errors.value.kataSambutan == ""){
+     try {
+      await setDoc(doc(db, 'settings', 'about::kata_sambutan'), {
+        key: 'about::kata_sambutan',
+        value: kataSambutan.value
+      })
+
+      isSaving.value = false
+      alert('Data berhasil disimpan')
+    } catch (err) {
+      isSaving.value = false
+      alert('Gagal menyimpan data')
+    }
+  }else{
+    isSaving.value = false
+  }
+ 
 }
 
 useTitle(`Pengaturan Tentang Kami - ${konfigurasi.app.name}`)
@@ -64,6 +77,12 @@ useTitle(`Pengaturan Tentang Kami - ${konfigurasi.app.name}`)
           class="w-full font-sans border-gray-300 focus:border-blue-500 border-2 rounded-lg outline-none px-2 py-1 mt-1 resize-none"
           rows="5"
         ></textarea>
+        <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.kataSambutan"
+        >
+          {{ errors.kataSambutan }}
+        </small>
       </div>
 
       <div class="border-t p-4">

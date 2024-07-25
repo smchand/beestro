@@ -140,7 +140,7 @@ useTitle(`${konfigurasi.app.name}`) //title page
       <div class="col-span-5 p-12 flex items-center justify-start">
         <!-- flex biar kesamping, kalo ga dia numpuk kebawah -->
         <div>
-          <h1 class="text-4xl text-white font-bold font-antique">Discover JAN Bistro</h1>
+          <h1 class="text-4xl text-white font-bold font-antique">Discover Beestro</h1>
           <p class="text-white mt-4 text-2xl font-rosario">
             {{ discoverText }}
           </p>
@@ -238,7 +238,7 @@ useTitle(`${konfigurasi.app.name}`) //title page
               <div class="flex items-center px-6 h-full">
                 <div>
                   <p class="font-rosario text-[17px] text-white">
-                    What’s going on this week at JAN Bistro?
+                    What’s going on this week at Beestro?
                   </p>
 
                   <h1 class="font-rosarivo text-[40px] text-white">Deals & Events</h1>

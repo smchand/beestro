@@ -108,8 +108,7 @@ useTitle(`Contact Us - ${konfigurasi.app.name}`)
           <h1 class="font-antique font-bold text-[28px]">Contact Us</h1>
 
           <p class="font-rosario text-[18px]">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-            incididunt ut labore et dolore magna aliqua.
+            Feedback is our fuel to grow much more
           </p>
         </div>
 

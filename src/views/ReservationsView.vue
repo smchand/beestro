@@ -4,7 +4,7 @@ import Logo from "@/components/icons/Logo.vue";
 import konfigurasi from "@/config.js";
 
 import base64 from "@/helpers/base64.js";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useTitle } from "@vueuse/core";
 import { useFirestore } from "vuefire";
 import {
@@ -60,6 +60,15 @@ onMounted(async () => {
   tomorrow.value = `${yyyy}-${mm}-${dd}`;
 });
 
+const amount = computed(() => {
+  const numPeople = parseInt(numberOfPeople.value) || 0;
+  return numPeople > 5 ? numPeople * 100000 : numPeople * 50000;
+});
+
+const formattedAmount = computed(() => {
+  return amount.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+});
+
 const simpanData = async () => {
   isSaving.value = true;
 
@@ -108,6 +117,8 @@ const simpanData = async () => {
   }
 };
 
+
+
 const uploadFile = async (event) => {
   const file = event.target.files[0];
   if (file.size > 1024 * 1024) {
@@ -136,6 +147,8 @@ const submitFinal = async () => {
     return alert("Please upload screenshot of your payment proof");
   } else {
     try {
+      const docName = `BOOKING-${bookedDate.value}-${name.value}-${Math.floor(hours + Math.random() * 1000)}`;
+      console.log("Document Name: ", docName); // Untuk de
       await setDoc(
         doc(db, "reservations", `BOOKING-${bookedDate.value}-${name.value}-${Math.floor(hours + Math.random() * 1000)}`),
         {
@@ -192,8 +205,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
         <h1 class="font-antique font-bold text-[28px]">Book a table</h1>
 
         <p class="font-rosario text-[20px]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Reserve your hive before it runs out!
         </p>
 
         <form
@@ -376,12 +388,12 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
               <div class="text-center">
                 <h1 class="font-bold text-2xl">Scan QR Code to pay</h1>
                 <p class="mt-1 text-[16px]">
-                  Pay and upload proof of your payment
+                  Please upload your payment receipt here
                 </p>
 
                 <div class="mt-6">
                   <h3 class="text-[20px] font-semibold">Amount to Pay</h3>
-                  <h4 class="text-4xl font-antique font-bold">Rp200.000</h4>
+                  <h4 class="text-4xl font-antique font-bold">Rp{{ formattedAmount }}</h4>
                 </div>
 
                 <div class="mt-6">
@@ -418,7 +430,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
 
             <div class="text-center">
               <h1 class="font-bold text-2xl">Thank You</h1>
-              <p class="mt-1 text-[16px]">Please wait for our confirmation</p>
+              <p class="mt-1 text-[16px]">Please wait for our confirmation within 24 hours via WhatsApp/Email</p>
             </div>
           </div>
         </div>

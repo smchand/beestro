@@ -71,46 +71,110 @@ const hapusFieldBanner = (index) => {
   temp.splice(index, 1)
   banners.value = [...temp]
 }
-// END BANNER
+
+const errors = ref({discoverText: "", banners: "", chefRecommendation: "", middleImage: "", bottomImage: ""});
+
+const validateContent= () => {
+  console.log("Validating banners..."); // Tambahkan log untuk memeriksa validasi
+  errors.value = {
+      discoverText: "",
+      banners: "",
+      chefRecommendation: "",
+      middleImage: "",
+      bottomImage: ""
+    };
+
+  if (!discoverText.value)
+    errors.value.discoverText = "Discover text tidak boleh kosong";
+
+  for (let i = 0; i < banners.value.length; i++) {
+    const banner = banners.value[i];
+    if (!banner.image.trim() || !banner.caption.trim()) {
+      errors.value.banners = `Data pada banner ke-${i + 1} tidak boleh kosong'.`;
+      break; // Berhenti pada kesalahan pertama yang ditemukan
+    }
+  }
+
+  for (let i = 0; i < chefRecommendation.value.length; i++) {
+    const item = chefRecommendation.value[i];
+    if (!item.image.trim()) {
+      errors.value.chefRecommendation = `Chef Recommendation ke-${i + 1} tidak boleh kosong pada 'image'.`;
+      break; // Berhenti pada kesalahan pertama yang ditemukan
+    }
+  }
+
+  for (let i = 0; i < middleImage.value.length; i++) {
+    const item = middleImage.value[i];
+    if (!item.image.trim()) {
+      errors.value.middleImage = `Image ke-${i + 1} tidak boleh kosong pada 'image'.`;
+      break; // Berhenti pada kesalahan pertama yang ditemukan
+    }
+  }
+
+   for (let i = 0; i < bottomImage.value.length; i++) {
+    const item = bottomImage.value[i];
+    if (!item.image.trim()) {
+      errors.value.bottomImage = `Image ke-${i + 1} tidak boleh kosong pada 'image'.`;
+      break; // Berhenti pada kesalahan pertama yang ditemukan
+    }
+  }
+
+  // Log hasil validasi
+  console.log("Validation result:", errors.value.banners ? errors.value.banners : "No errors");
+};
 
 const simpanData = async () => {
+  console.log("Starting data save process...");
   isSaving.value = true
 
-  const batch = writeBatch(db)
+ validateContent();
 
-  try {
-    batch.set(doc(settingsRef, 'homepage::banner'), {
-      key: 'homepage::banner',
-      value: banners.value
-    })
+    console.log("Errors after validation:", errors.value);
+  if(
+    errors.value.banners == "" &&
+    errors.value.discoverText == "" &&
+    errors.value.chefRecommendation == "" &&
+    errors.value.middleImage == "" &&
+    errors.value.bottomImage == ""
+  ){
+    const batch = writeBatch(db)
+    try {
+      console.log("Preparing data for batch commit...");
+      batch.set(doc(settingsRef, 'homepage::banner'), {
+        key: 'homepage::banner',
+        value: banners.value
+      })
 
-    batch.set(doc(settingsRef, 'homepage::discover_text'), {
-      key: 'homepage::discover_text',
-      value: discoverText.value
-    })
+      batch.set(doc(settingsRef, 'homepage::discover_text'), {
+        key: 'homepage::discover_text',
+        value: discoverText.value
+      })
 
-    batch.set(doc(settingsRef, 'homepage::chef_recommendation'), {
-      key: 'homepage::chef_recommendation',
-      value: chefRecommendation.value
-    })
+      batch.set(doc(settingsRef, 'homepage::chef_recommendation'), {
+        key: 'homepage::chef_recommendation',
+        value: chefRecommendation.value
+      })
 
-    batch.set(doc(settingsRef, 'homepage::middle_image'), {
-      key: 'homepage::middle_image',
-      value: middleImage.value
-    })
+      batch.set(doc(settingsRef, 'homepage::middle_image'), {
+        key: 'homepage::middle_image',
+        value: middleImage.value
+      })
 
-    batch.set(doc(settingsRef, 'homepage::bottom_image'), {
-      key: 'homepage::bottom_image',
-      value: bottomImage.value
-    })
+      batch.set(doc(settingsRef, 'homepage::bottom_image'), {
+        key: 'homepage::bottom_image',
+        value: bottomImage.value
+      })
 
-    await batch.commit()
+      await batch.commit()
 
-    isSaving.value = false
-    alert('Data berhasil disimpan')
-  } catch (error) {
-    isSaving.value = false
-    alert('Gagal menyimpan data')
+      isSaving.value = false
+      alert('Data berhasil disimpan')
+    } catch (error) {
+      isSaving.value = false
+      alert('Gagal menyimpan data')
+    }
+  }else {
+    isSaving.value = false;
   }
 }
 
@@ -170,15 +234,21 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
             </div>
           </div>
         </div>
-
+        
         <button
           @click="tambahFieldBanner()"
           class="bg-gray-600/10 px-2 rounded-lg py-1 font-sans font-medium mt-2"
         >
           Tambah Field Banner
         </button>
+        <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.banners"
+        >
+          {{ errors.banners }}
+        </small>
       </div>
-
+        
       <div class="p-4 border-b">
         <h1 class="font-sans font-semibold text-[18px] mb-2">DISCOVER TEXT</h1>
 
@@ -190,6 +260,12 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
             v-model="discoverText"
           ></textarea>
         </div>
+         <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.discoverText"
+        >
+          {{ errors.discoverText }}
+        </small>
       </div>
 
       <div class="p-4 border-b">
@@ -254,14 +330,20 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
             />
           </div>
         </div>
+          <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.chefRecommendation"
+        >
+          {{ errors.chefRecommendation }}
+        </small>
       </div>
 
       <div class="p-4 border-b">
-        <h1 class="font-sans font-semibold text-[18px] mb-2">2 GAMBAR TENGAH</h1>
+        <h1 class="font-sans font-semibold text-[18px] mb-2">2 GAMBAR RESERVATION</h1>
 
         <div class="mb-4">
           <label for="input_middle_image_1" class="font-sans font-medium">
-            URL Gambar Tengah 1
+            URL Gambar 1
           </label>
 
           <input
@@ -274,7 +356,7 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
 
         <div class="">
           <label for="input_middle_image_2" class="font-sans font-medium">
-            URL Gambar Tengah 2
+            URL Gambar 2
           </label>
 
           <input
@@ -284,14 +366,20 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
             v-model="middleImage[1].image"
           />
         </div>
+        <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.middleImage"
+        >
+          {{ errors.middleImage }}
+        </small>
       </div>
 
       <div class="p-4 border-b">
-        <h1 class="font-sans font-semibold text-[18px] mb-2">2 GAMBAR BAWAH</h1>
+        <h1 class="font-sans font-semibold text-[18px] mb-2">2 GAMBAR DEALS & EVENTS</h1>
 
         <div class="mb-4">
           <label for="input_gambar_bawah_1" class="font-sans font-medium">
-            URL Gambar Bawah 1
+            URL Gambar 1
           </label>
 
           <input
@@ -304,7 +392,7 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
 
         <div class="">
           <label for="input_gambar_bawah_2" class="font-sans font-medium">
-            URL Gambar Bawah 2
+            URL Gambar 2
           </label>
 
           <input
@@ -314,6 +402,12 @@ useTitle(`Pengaturan Homepage - ${konfigurasi.app.name}`)
             v-model="bottomImage[1].image"
           />
         </div>
+        <small
+          class="text-red-500 font-sans text-[15px]"
+          v-if="errors.bottomImage"
+        >
+          {{ errors.bottomImage }}
+        </small>
       </div>
 
       <div class="p-4">

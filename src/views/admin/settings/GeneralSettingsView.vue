@@ -13,7 +13,13 @@ import { useFirestore } from 'vuefire'
 import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
 
 const isSaving = ref(false)
-const list = ref([{ instagram: '' }, { tiktok: '' }, { kontak: '' }, { alamat: '' }, { qris: '' }])
+const list = ref([
+  { instagram: '' },
+  { tiktok: '' },
+  { kontak: '' },
+  { alamat: '' },
+  { qris: '' }
+]);
 
 const db = useFirestore()
 
@@ -29,20 +35,60 @@ onMounted(async () => {
 })
 // END LOAD DATA
 
+const errors = ref({ 
+  list: {
+    instagram: "",
+    tiktok: "",
+    kontak: "",
+    alamat: "",
+    qris: ""
+  }
+});
+
+const validateList = () => {
+  console.log("Validating list..."); // Logging untuk memeriksa proses validasi
+
+  // Reset pesan kesalahan untuk setiap field dalam list
+  errors.value.list = {
+    instagram: "",
+    tiktok: "",
+    kontak: "",
+    alamat: "",
+    qris: ""
+  };
+
+  // Memeriksa setiap field dalam list
+  list.value.forEach(item => {
+    for (const key in item) {
+      if (item.hasOwnProperty(key) && !item[key].trim()) {
+        errors.value.list[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} tidak boleh kosong.`;
+      }
+    }
+  });
+
+  // Log hasil validasi
+  console.log("Validation result for list:", errors.value.list);
+};
+
+
 const simpanData = async () => {
   isSaving.value = true
+  validateList();
+   if(Object.values(errors.value.list).every(error => !error)){
+    try {
+      await setDoc(doc(db, 'settings', 'general::metadatas'), {
+        key: 'general::metadatas',
+        value: list.value
+      })
 
-  try {
-    await setDoc(doc(db, 'settings', 'general::metadatas'), {
-      key: 'general::metadatas',
-      value: list.value
-    })
-
-    isSaving.value = false
-    alert('Data berhasil disimpan')
-  } catch (error) {
-    isSaving.value = false
-    alert('Gagal menyimpan data')
+      isSaving.value = false
+      alert('Data berhasil disimpan')
+    } catch (error) {
+      isSaving.value = false
+      alert('Gagal menyimpan data')
+    }
+  }else{
+    isSaving.value = false;
   }
 }
 
@@ -68,6 +114,12 @@ useTitle(`Pengaturan Umum - ${konfigurasi.app.name}`)
               v-model="list[0].instagram"
               placeholder="https://instagram.com/example"
             />
+            <small
+            class="text-red-500 font-sans text-[15px]"
+            v-if="errors.list.instagram"
+            >
+            {{ errors.list.instagram }}
+            </small>
           </div>
         </div>
 
@@ -82,6 +134,12 @@ useTitle(`Pengaturan Umum - ${konfigurasi.app.name}`)
               v-model="list[1].tiktok"
               placeholder="https://tiktok.com/example"
             />
+            <small
+            class="text-red-500 font-sans text-[15px]"
+            v-if="errors.list.tiktok"
+            >
+            {{ errors.list.tiktok }}
+            </small>
           </div>
         </div>
 
@@ -96,7 +154,14 @@ useTitle(`Pengaturan Umum - ${konfigurasi.app.name}`)
               v-model="list[2].kontak"
               placeholder="+621 232323"
             />
+            <small
+            class="text-red-500 font-sans text-[15px]"
+            v-if="errors.list.kontak"
+            >
+            {{ errors.list.kontak }}
+            </small>
           </div>
+          
         </div>
 
         <div class="grid grid-cols-1 mb-4 gap-4">
@@ -110,7 +175,14 @@ useTitle(`Pengaturan Umum - ${konfigurasi.app.name}`)
               v-model="list[3].alamat"
               placeholder="Kebon Sirih"
             />
+            <small
+            class="text-red-500 font-sans text-[15px]"
+            v-if="errors.list.alamat"
+            >
+            {{ errors.list.alamat }}
+            </small>
           </div>
+          
         </div>
 
         <div class="grid grid-cols-1 mb-4 gap-4">
@@ -124,7 +196,14 @@ useTitle(`Pengaturan Umum - ${konfigurasi.app.name}`)
               v-model="list[4].qris"
               placeholder="https://cdn.example.com/example-qris.jpg"
             />
+             <small
+            class="text-red-500 font-sans text-[15px]"
+            v-if="errors.list.qris"
+            >
+            {{ errors.list.qris }}
+            </small>
           </div>
+           
         </div>
       </div>
 

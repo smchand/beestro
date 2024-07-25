@@ -109,7 +109,7 @@ useTitle(`Data Feedback  - ${konfigurasi.app.name}`)
                 type="button"
                 @click="openModal(feedback)"
               >
-                Lihat
+                Details
               </button>
             </td>
           </tr>

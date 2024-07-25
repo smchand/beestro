@@ -179,7 +179,7 @@ const route = useRoute()
         </div>
 
         <p class="text-gray-300 mt-5 font-poppins text-[15px]">
-          © {{ new Date().getFullYear() }} JAN Bistro. All Rights Reserved.
+          © {{ new Date().getFullYear() }} Beestro. All Rights Reserved.
         </p>
       </div>
     </div>

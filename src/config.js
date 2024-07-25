@@ -1,6 +1,6 @@
 const konfigurasi = {
   app: {
-    name: 'Jan Bistro'
+    name: 'Beestro'
   },
   firebase: {
     apiKey: "AIzaSyD_qqvP6Kdb0OxuhiLWFiW7VVWOFL_pVjc",

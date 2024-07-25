@@ -17,6 +17,7 @@ const category = {
   asian: "Asian",
   pizza_pasta: "Pizza & Pasta",
   beverages: "Beverages",
+  desert: "Desert",
 };
 const tab = ref({ slug: "starter", title: "Starter" });
 const content = ref([]);
@@ -49,7 +50,7 @@ onMounted(async () => {
   await fetchData();
 });
 
-const itemsPerPage = 6;
+const itemsPerPage = 8;
 const currentPage = ref(1);
 const totalPages = computed(() => Math.ceil(list.value.length / itemsPerPage));
 
@@ -101,7 +102,7 @@ useTitle(`Menu - ${konfigurasi.app.name}`);
     <section class="py-12 bg-[#1C1C1C]">
       <div class="max-w-6xl mx-auto px-4 2xl:px-0">
         <nav>
-          <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1">
+          <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-1">
             <li
               v-for="(cat, index) in category"
               :key="index"
@@ -190,7 +191,7 @@ useTitle(`Menu - ${konfigurasi.app.name}`);
 
             <div class="mt-4 flex justify-start font-sans" v-if="!isLoading">
               <button
-                class="px-4 py-2 bg-slate-600 text-white rounded-lg mr-2"
+                class="px-4 py-2 bg-[#DBAD39] text-black rounded-lg mr-2"
                 @click="goToPage(currentPage - 1)"
                 v-if="currentPage > 1"
               >
@@ -198,7 +199,7 @@ useTitle(`Menu - ${konfigurasi.app.name}`);
               </button>
 
               <button
-                class="px-4 py-2 bg-slate-600 text-white rounded-lg"
+                class="px-4 py-2 bg-[#DBAD39] text-black rounded-lg"
                 @click="goToPage(currentPage + 1)"
                 v-if="currentPage < totalPages"
               >

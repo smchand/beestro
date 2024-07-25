@@ -24,6 +24,7 @@ const category = {
   asian: "Asian",
   pizza_pasta: "Pizza & Pasta",
   beverages: "Beverages",
+  desert: "Desert",
 };
 const tab = ref({ slug: "starter", title: "Starter" });
 const list = ref([]);
@@ -228,7 +229,7 @@ useTitle(`Pengaturan Menu - ${konfigurasi.app.name}`);
                   <button
                     @click="hapus(data)"
                     type="button"
-                    class="text-white text-[12px] font-sans bg-blue-500 rounded mt-2 px-2 py-1"
+                    class="text-white text-[12px] font-sans bg-red-500 rounded mt-2 px-2 py-1"
                   >
                     Hapus
                   </button>
