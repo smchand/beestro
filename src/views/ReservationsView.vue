@@ -399,7 +399,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
                     dark
                   >
                     <template #input-icon>
-                       <img class="input-slot-image" src="D:\jan-bistro-live\src\assets\clock.png"/>
+                       <img class="input-slot-image" src="D:\jan-bistro-live\public\assets\img\clock.png"/>
                     </template>
                   </datePicker>
 
