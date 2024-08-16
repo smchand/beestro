@@ -228,7 +228,7 @@ useTitle(`Data Reservasi  - ${konfigurasi.app.name}`);
             <td class="border px-4 py-2">{{ reservation.phoneNumber }}</td>
             <td class="border px-4 py-2">
               {{ formatDate(reservation.bookedDate) }} -
-              {{ reservation.bookedTime }}
+              {{ reservation.bookedTime.hours }}:{{ reservation.bookedTime.minutes === 0 ? '00' : reservation.bookedTime.minutes }} 
             </td>
             <td class="border px-4 py-2">{{ reservation.status }}</td>
             <td class="border px-4 py-2 text-center">
