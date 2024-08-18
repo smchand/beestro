@@ -180,11 +180,10 @@ const uploadFile = async (event) => {
 const submitFinal = async () => {
   isSaving.value = true;
 
-  console.log("Time: ", bookedTime);
+  //console.log("Time: ", bookedTime);
   const bookingDate = new Date(bookedDate.value);
   const hour = bookedTime.value.hours;
   const minute = bookedTime.value.minutes;
-
 
   bookingDate.setHours(hour);
   bookingDate.setMinutes(minute);
@@ -399,7 +398,7 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
                     dark
                   >
                     <template #input-icon>
-                       <img class="input-slot-image" src="D:\jan-bistro-live\public\assets\img\clock.png"/>
+                       <img class="input-slot-image" src="/assets/img/clock.png"/>
                     </template>
                   </datePicker>
 

@@ -250,6 +250,7 @@ useTitle(`Pengaturan Deals & Events - ${konfigurasi.app.name}`)
       class="backdrop-blur-sm fixed top-0 bottom-0 right-0 left-0 bg-black/50"
     >
       <div class="flex items-center justify-center h-full">
+        
         <form @submit.prevent="simpanData" class="mx-4 lg:mx-0 w-[450px] max-w-[450px]">
           <div class="bg-gray-200 px-4 py-2 rounded-tl rounded-tr flex justify-between border-b">
             <h1 class="font-bold font-sans text-[16px]">
