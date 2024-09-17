@@ -357,11 +357,11 @@ useTitle(`Reservations - ${konfigurasi.app.name}`);
                       }"
                       dark
                     />  
-        
+                     <!-- :format="'dd/MM/yyyy'" -->
                 <small
                   class="text-red-500 font-sans text-[15px]"
                   v-if="errors.bookedDate"
-                >
+                > 
                   {{ errors.bookedDate }}
                 </small>
               </div>
